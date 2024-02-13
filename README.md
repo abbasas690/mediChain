@@ -3,10 +3,9 @@
   <p align="center">
     Revolutionizing healthcare data management: blockchain-based medical record storage for patients and insurance companies
   
-  https://user-images.githubusercontent.com/66792720/232314462-c424ec69-5868-4194-9311-9d9ab89e18fe.mp4
+  <https://user-images.githubusercontent.com/66792720/232314462-c424ec69-5868-4194-9311-9d9ab89e18fe.mp4>
   </p>
 </p>
-
 
 <!-- TABLE OF CONTENTS -->
 <details open="open">
@@ -44,6 +43,7 @@ The data privacy of patients is essential because it involves sensitive personal
 Our project MediChain seeks to address these challenges by leveraging the power of blockchain to create a secure, decentralized platform for storing and sharing healthcare data. By doing so, we hope to empower patients and Insurance providers, to make more informed decisions, improve outcomes, and advance the field of healthcare as a whole.
 
 ## ℹ️ Future Prospects
+
 1. We will be implementing insurance policy as ERC-721 Standard (i.e Non-Fungible Tokens), so as to specify the uniqueness and ownership of each insurance policy.
 2. We will be giving patients the flexibility to buy health insurance policy according to their preference instead of defined policies by the insurance provider.
 3. We will predict policy annual premium amount using Machine Learning techniques based on factors like patient's age, location, etc.
@@ -58,7 +58,7 @@ Following technologies and libraries are used for the development of this projec
 - [Truffle](https://trufflesuite.com/)
 - [Mocha](https://mochajs.org/)
 - [Chai](https://chaijs.com/)
-- [Infura](https://infura.io/)
+- [pinata](https://www.pinata.cloud/)
 
 <!-- GETTING STARTED -->
 
@@ -72,7 +72,7 @@ To setup the project locally follow the steps below
 - [Ganache](https://trufflesuite.com/ganache/)
 - [Metamask Wallet Extension](https://docs.docker.com/compose/install/) or a Web3 browser like Brave
 
-### 🤖 Running the project.
+### 🤖 Running the project
 
 To set this up in the local repository:
 
@@ -85,13 +85,14 @@ npm run client:install
 npm run truffle:install
 ```
 
-3. Now, start a local Ethereum blockchain network on your system using Ganache. Ganache provides you with 10 testing accounts each with 100 ETH. 
+3. Now, start a local Ethereum blockchain network on your system using Ganache. Ganache provides you with 10 testing accounts each with 100 ETH.
 
-4. Obtain Infura API Key and API Secret for IPFS from [Infura Dashboard](https://infura.io/), and create a dedicated gateway for your project. Set the environment variables in `client/.env` file. Or you can rename `client/.env.example` to `client/.env`
+4. Obtain  API Key and API Secret for IPFS from [pinata Dashboard](https://www.pinata.cloud/), and create a dedicated gateway for your project. Set the environment variables in `client/.env` file. Or you can rename `server/.env.example` to `client/.env`
+
 ```bash
-REACT_APP_INFURA_PROJECT_ID=...
-REACT_APP_INFURA_API_KEY_SECRET=...
-REACT_APP_INFURA_DEDICATED_GATEWAY=....
+
+pinataApiKey="..."
+pinataApiSecret="..."
 ```
 
 5. Then, copy the following commands to deploy the smart contracts to the local Ethereum blockchain and start the React app:
@@ -99,6 +100,12 @@ REACT_APP_INFURA_DEDICATED_GATEWAY=....
 ```
 npm run truffle:migrate
 npm run client:start
+```
+6. run sever 
+
+```
+cd sever
+node script.js
 ```
 
 6. Set up Metamask to connect to the local blockchain created by Ganache(i.e. [http://localhost:8545/](http://localhost:8545/))
