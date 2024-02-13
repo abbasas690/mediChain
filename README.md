@@ -87,7 +87,7 @@ npm run truffle:install
 
 3. Now, start a local Ethereum blockchain network on your system using Ganache. Ganache provides you with 10 testing accounts each with 100 ETH.
 
-4. Obtain  API Key and API Secret for IPFS from [pinata Dashboard](https://www.pinata.cloud/), and create a dedicated gateway for your project. Set the environment variables in `client/.env` file. Or you can rename `server/.env.example` to `client/.env`
+4. Obtain  API Key and API Secret for IPFS from [pinata Dashboard](https://www.pinata.cloud/), and Set the environment variables in `server/.env` file. Or you can rename `server/.env.example` to `server/.env`
 
 ```bash
 
