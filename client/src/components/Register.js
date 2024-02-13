@@ -1,33 +1,64 @@
 import { useEffect, useState } from 'react';
 import { Button, Form } from 'react-bootstrap';
-import { Buffer } from 'buffer';
+import { uploadAndPin } from './utils';
 
-const Register = ({mediChain, ipfs, connectWallet, token, account, setToken, setAccount}) => {
+const Register = ({mediChain, connectWallet, token, account, setToken, setAccount}) => {
     const [designation, setDesignation] = useState("1");
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [age, setAge] = useState('');
+    // const [path,setPath] = useState('');
 
-    const handleSubmit = (e) => {
+    // async function uploadAndPin(inputText) {
+
+    //     console.log(typeof inputText.name)
+        
+    //         if (!inputText) {
+    //             return;
+    //         }
+
+    //         try {
+    //             const response = await fetch('http://localhost:3001/pinString', {
+    //                 method: 'POST',
+    //                 headers: {
+    //                     'Content-Type': 'application/json',
+    //                 },
+    //                 body: JSON.stringify({ text: JSON.stringify(inputText) }),
+    //             });
+
+    //             const data = await response.json();
+
+    //             if (data.success) {
+    //                 console.log('String pinned. CID:', typeof data.cid);
+    //                 // setPath(data.cid)
+    //                 return data.cid
+    //             } else {
+    //                 console.error('Failed to pin string:', data.error);
+    //             }
+    //         } catch (error) {
+    //             console.error('Error pinning string:', error.message);
+    //         }
+    //     }
+
+    const handleSubmit = async(e) => {
         e.preventDefault();
         if(account!=="" && designation==="1"){
-            var record = Buffer(JSON.stringify({
+            var record = {
                 name: name,
                 email: email,
                 address: account,
                 age: age,
                 treatments: []
-            }));
-            ipfs.add(record).then((result, error) => {
-                if(error){
-                    console.log(error);
-                    return;
-                }else{
-                    mediChain.methods.register(name, age, parseInt(designation), email, result.path).send({from: account}).on('transactionHash', async (hash) => {
+            };
+                
+
+            const path1 = await uploadAndPin(record)
+            // console.log(name,age,designation,email,path1)
+            // console.log(typeof name,typeof age,typeof designation,typeof email,typeof path1)
+            await        mediChain.methods.register(name, parseInt(age), parseInt(designation), email,path1)
+                    .send({from: account}).on('transactionHash', async (hash) => {
                         window.location.href = '/login'
                     })
-                }
-            })
         }else if(account!==""){
             mediChain.methods.register(name, 0, parseInt(designation), email, "").send({from: account}).on('transactionHash', async (hash) => {
                 window.location.href = '/login'

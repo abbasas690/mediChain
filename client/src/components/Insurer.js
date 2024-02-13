@@ -40,9 +40,12 @@ const Insurer = ({mediChain, account, ethValue}) => {
     const handleCloseRecordModal = () => setShowRecordModal(false);
     const handleShowRecordModal = async (e, patient) => {
         var record = {}
-        await fetch(`${process.env.REACT_APP_INFURA_DEDICATED_GATEWAY}/ipfs/${patient.record}`)
+        await fetch(`https://ipfs.io/ipfs/${patient.record}`)
             .then(res => res.json())
-            .then(data => record = data)
+            .then(data =>{ record = data
+            record = JSON.parse(data.message);
+            console.log("data",record)
+            })
         await setPatientRecord(record);
         await setShowRecordModal(true);
     }
@@ -292,7 +295,7 @@ const Insurer = ({mediChain, account, ethValue}) => {
                                                 <td>{treatment.treatment}</td>
                                                 <td>
                                                     { treatment.prescription ? 
-                                                        <Link to={`${process.env.REACT_APP_INFURA_DEDICATED_GATEWAY}/ipfs/${treatment.prescription}`} target="_blank"><Button variant="coolColor">View</Button></Link>
+                                                        <Link to={`https://ipfs.io/ipfs/${treatment.prescription}`} target="_blank"><Button variant="coolColor">View</Button></Link>
                                                         : "No document uploaded"
                                                     }
                                                 </td>

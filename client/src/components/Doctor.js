@@ -6,9 +6,10 @@ import Table from 'react-bootstrap/Table'
 import Modal from 'react-bootstrap/Modal';
 import { Buffer } from 'buffer';
 import { Link } from 'react-router-dom'
+import { pinToPinata, uploadAndPin, uploadFile } from './utils';
 
 
-const Doctor = ({ipfs, mediChain, account}) => {
+const Doctor = ({ mediChain, account}) => {
   const [doctor, setDoctor] = useState(null);
   const [patient, setPatient] = useState(null);
   const [patientRecord, setPatientRecord] = useState(null);
@@ -50,11 +51,7 @@ const Doctor = ({ipfs, mediChain, account}) => {
   const captureFile = async (e) => {
     e.preventDefault()
     const file = e.target.files[0];
-    const reader = new window.FileReader()
-    reader.readAsArrayBuffer(file)
-    reader.onloadend = () => {
-      setFileBuffer(Buffer(reader.result))
-    }
+      setFileBuffer(file)
   }
 
 
@@ -66,9 +63,9 @@ const Doctor = ({ipfs, mediChain, account}) => {
   }
   const handleShowRecordModal = async (patient) => {
     var record = {}
-    await fetch(`${process.env.REACT_APP_INFURA_DEDICATED_GATEWAY}/ipfs/${patient.record}`)
+    await fetch(`https://ipfs.io/ipfs/${patient.record}`)
       .then(res => res.json())
-      .then(data => record = data)
+      .then(data => record = JSON.parse(data.message));
     await setPatientRecord(record);
     await setShowRecordModal(true);
   }
@@ -76,19 +73,17 @@ const Doctor = ({ipfs, mediChain, account}) => {
     e.preventDefault()
     let file = "";
     if(fileBuffer) {
-      await ipfs.add(fileBuffer).then((res, error) => {
-        if(error){
-          console.log(error)
-        }else{
-          file = res.path
-        }
-      })
-    }
+      await uploadFile(fileBuffer).then(res=> {file=res;console.log(res)})
+      console.log(file)
+          } 
+
+      
+    
     var record = {}
-    await fetch(`${process.env.REACT_APP_INFURA_DEDICATED_GATEWAY}/ipfs/${patient.record}`)
+    await fetch(`https://ipfs.io/ipfs/${patient.record}`)
       .then(res => res.json())
       .then(data => {
-        record = data;
+        record = JSON.parse(data.message);
       })
     const date = new Date();
 
@@ -99,18 +94,15 @@ const Doctor = ({ipfs, mediChain, account}) => {
       hour: "numeric",
       minute: "2-digit"
     });
+    // console.log( record)
     record.treatments = [ {disease, treatment, charges, prescription: file, date: formattedDate, doctorEmail: doctor.email}, ...record.treatments ]
-    record = Buffer(JSON.stringify(record))
-    ipfs.add(record).then((result, error) => {
-      if(error){
-        console.log(error);
-        return;
-      }else{
-        mediChain.methods.insuranceClaimRequest(patient.account, result.path, charges).send({from: account}).on('transactionHash', (hash) => {
+    record = record
+    await uploadAndPin(record).then(result => {
+     console.log(result) 
+        mediChain.methods.insuranceClaimRequest(patient.account, result, charges).send({from: account}).on('transactionHash', (hash) => {
           return window.location.href = '/login'
         })
-      }
-    })
+    });
   }
 
 
@@ -273,7 +265,7 @@ const Doctor = ({ipfs, mediChain, account}) => {
                                 <td>{treatment.treatment}</td>
                                 <td>
                                   { treatment.prescription ? 
-                                    <Link to={`${process.env.REACT_APP_INFURA_DEDICATED_GATEWAY}/ipfs/${treatment.prescription}`} target="_blank"><Button variant="coolColor">View</Button></Link>
+                                    <Link to={`https://ipfs.io/ipfs/${treatment.prescription}`} target="_blank"><Button variant="coolColor">View</Button></Link>
                                     : "No document uploaded"
                                   }
                                 </td>
