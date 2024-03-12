@@ -11,8 +11,10 @@ const port = 3001;
 app.use(bodyParser.json());
 app.use(cors())
 
-const pinataApiKey = process.env.pinataApiKey
-const pinataApiSecret = process.env.pinataApiSecret 
+const pinataApiKey="cc09081a0a80ef8809e0"
+const pinataApiSecret="503c0ff4d74695e546fc08926b055c385ff2932fa54d2b1ec0fd707a597e3e81"
+// const pinataApiKey = process.env.pinataApiKey
+// const pinataApiSecret = process.env.pinataApiSecret 
 
 // Multer configuration
 const upload = multer({ dest: 'uploads/' });
