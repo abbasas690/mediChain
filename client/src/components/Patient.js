@@ -6,6 +6,7 @@ import Table from "react-bootstrap/Table";
 import Modal from "react-bootstrap/Modal";
 import { Link } from "react-router-dom";
 import Web3 from "web3";
+import { uploadAndPin } from "./utils";
 
 const Patient = ({ mediChain, account, ethValue }) => {
   const [patient, setPatient] = useState(null);
@@ -21,6 +22,9 @@ const Patient = ({ mediChain, account, ethValue }) => {
   const [patientRecord, setPatientRecord] = useState(null);
   const [patientlabRecord, setPatientlabRecord] = useState(null);
   const [showlabRecordModal, setShowlabRecordModal] = useState(false);
+  const [appointment, setAppointment] = useState({});
+  const [Viewappointment, setViewAppointment] = useState({ appointments: [] });
+  const [appointmentShow, setAppointmentShow] = useState(false);
 
   const getPatientData = async () => {
     var patient = await mediChain.methods.patientInfo(account).call();
@@ -36,7 +40,7 @@ const Patient = ({ mediChain, account, ethValue }) => {
       });
   };
   const revokeAccess = async (email) => {
-    var addr = await mediChain.methods.emailToAddress(email).call();
+    var addr = await mediChain.methods.emailToAddress(patient.email).call();
     mediChain.methods
       .revokeAccess(addr)
       .send({ from: account })
@@ -133,6 +137,51 @@ const Patient = ({ mediChain, account, ethValue }) => {
       });
     await setPatientRecord(record);
     await setShowRecordModal(true);
+  };
+  const handleChange = (event) => {
+    const name = event.target.name;
+    const value = event.target.value;
+    setAppointment((values) => ({ ...values, [name]: value }));
+  };
+  const handleshowAppointment = async (e) => {
+    e.preventDefault();
+    let record = {};
+    await fetch(`https:ipfs.io/ipfs/${patient.appointment}`)
+      .then((res) => res.json())
+      .then((data) => {
+        record = JSON.parse(data.message);
+        console.log(record);
+      });
+
+    setViewAppointment(record);
+    setAppointmentShow(true);
+  };
+  const handleAppointment = async (e) => {
+    e.preventDefault();
+    let record = {};
+    await fetch(`https:ipfs.io/ipfs/${patient.appointment}`)
+      .then((res) => res.json())
+      .then((data) => {
+        record = JSON.parse(data.message);
+        console.log(record);
+      });
+    record.appointments = [
+      { accept: false, reject: false, ...appointment },
+      ...record.appointments,
+    ];
+    var addr = await mediChain.methods.emailToAddress(patient.email).call();
+    await uploadAndPin(record).then((result) => {
+      console.log(result);
+      mediChain.methods
+        .makeAppointment(addr, result)
+        .send({ from: account })
+        .on("transactionHash", (hash) => {
+          return (window.location.href = "/dashboard");
+        });
+    });
+    console.log(appointment);
+    console.table(record);
+    console.log(patient.appointment);
   };
 
   const handleCloselabRecordModal = () => setShowlabRecordModal(false);
@@ -253,6 +302,61 @@ const Patient = ({ mediChain, account, ethValue }) => {
                 )}
               </tbody>
             </Table>
+          </div>
+          <div className="box">
+            <h2>Make Appointment with Docter</h2>
+            <Form
+              onSubmit={(e) => {
+                handleAppointment(e);
+              }}
+            >
+              <Form.Group>
+                <Form.Label>Date: </Form.Label>
+                <Form.Control
+                  name="date"
+                  type="date"
+                  onChange={(e) => {
+                    handleChange(e);
+                  }}
+                />
+              </Form.Group>
+              <Form.Group>
+                <Form.Label> doctor Email : </Form.Label>
+                <Form.Control
+                  name="email"
+                  type="email"
+                  placeholder="name@example.com"
+                  onChange={(e) => {
+                    handleChange(e);
+                  }}
+                />
+              </Form.Group>
+              <Form.Group>
+                <Form.Label> Description : </Form.Label>
+                <Form.Control
+                  name="description"
+                  type="text"
+                  onChange={(e) => {
+                    handleChange(e);
+                  }}
+                />
+              </Form.Group>
+              <Button
+                variant="coolColor"
+                type="submit"
+                style={{ marginTop: "1rem" }}
+              >
+                Make Appointment
+              </Button>
+              <Button
+                variant="coolColor"
+                type="button"
+                style={{ marginTop: "1rem" }}
+                onClick={(e) => handleshowAppointment(e)}
+              >
+                View Appointment
+              </Button>
+            </Form>
           </div>
           <div className="box">
             {patient.policyActive && insurer ? (
@@ -552,6 +656,72 @@ const Patient = ({ mediChain, account, ethValue }) => {
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={handleCloselabRecordModal}>
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      ) : (
+        <></>
+      )}
+      {Viewappointment ? (
+        <Modal
+          id="modal"
+          size="lg"
+          centered
+          show={appointmentShow}
+          onHide={() => setAppointmentShow(false)}
+        >
+          <Modal.Header closeButton>
+            <Modal.Title id="modalTitle">Appointment :</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form>
+              <Table id="records" striped bordered hover size="sm">
+                <thead>
+                  <tr>
+                    <th>Sr.&nbsp;No.</th>
+                    <th>Date</th>
+                    <th>doctor Email</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Viewappointment.appointments.length > 0 ? (
+                    Viewappointment.appointments.map((treatment, idx) => {
+                      return (
+                        <tr key={idx + 1}>
+                          <td>{idx + 1}</td>
+                          <td>{treatment.date}</td>
+                          <td>{treatment.email}</td>
+                          <td>{treatment.description}</td>
+                          <td>
+                            {treatment.accept === false &&
+                            treatment.reject === false ? (
+                              "pending"
+                            ) : treatment.accept === true ? (
+                              "accept"
+                            ) : treatment.reject === true ? (
+                              "reject"
+                            ) : (
+                              <></>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <></>
+                  )}
+                </tbody>
+              </Table>
+            </Form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button
+              variant="secondary"
+              onClick={() => setAppointmentShow(false)}
+            >
               Close
             </Button>
           </Modal.Footer>

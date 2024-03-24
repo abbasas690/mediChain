@@ -265,6 +265,11 @@ contract MediChain {
         transactions[_id].settled = true;
     }
 
+    function makeAppointment(address paddr, string memory _hash) external {
+        require(patientInfo[paddr].exists);
+        patientInfo[paddr].appointment = _hash;
+    }
+
     // Called by Doctor
     function insuranceClaimRequest(
         address paddr,

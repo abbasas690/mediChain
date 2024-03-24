@@ -19,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/Karan9034/gfg-enigma/issues"
   },
-  "homepage": "https://github.com/Karan9034/gfg-enigma#readme"
+  "homepage": "https://github.com/Karan9034/gfg-enigma#readme",
+  "dependencies": {
+    "react-datepicker": "^6.5.0"
+  }
 }
