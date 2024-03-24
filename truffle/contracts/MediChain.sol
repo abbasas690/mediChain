@@ -14,13 +14,13 @@ contract MediChain {
     Policy[] public policyList;
     uint public claimsCount;
     uint public transactionCount;
-    mapping (uint => Claims) public claims;
-    mapping (uint => Transactions) public transactions;
-    mapping (address => Patient) public patientInfo;
-    mapping (address => Doctor) public doctorInfo;
-    mapping (address => Insurer) public insurerInfo;
-    mapping (string => address) public emailToAddress;
-    mapping (string => uint) public emailToDesignation;
+    mapping(uint => Claims) public claims;
+    mapping(uint => Transactions) public transactions;
+    mapping(address => Patient) public patientInfo;
+    mapping(address => Doctor) public doctorInfo;
+    mapping(address => Insurer) public insurerInfo;
+    mapping(string => address) public emailToAddress;
+    mapping(string => uint) public emailToDesignation;
 
     struct Patient {
         string name;
@@ -75,19 +75,19 @@ contract MediChain {
         bool settled;
     }
 
-    
-
-    
-
-    
-
-    constructor(){
+    constructor() {
         name = "medichain";
         claimsCount = 0;
         transactionCount = 0;
     }
 
-    function register(string memory _name, uint _age, uint _designation, string memory _email, string memory _hash) public {
+    function register(
+        string memory _name,
+        uint _age,
+        uint _designation,
+        string memory _email,
+        string memory _hash
+    ) public {
         require(msg.sender != address(0));
         require(bytes(_name).length > 0);
         require(bytes(_email).length > 0);
@@ -97,7 +97,7 @@ contract MediChain {
         require(!patientInfo[_addr].exists);
         require(!doctorInfo[_addr].exists);
         require(!insurerInfo[_addr].exists);
-        if(_designation == 1){
+        if (_designation == 1) {
             require(_age > 0);
             require(bytes(_hash).length > 0);
             Patient storage pinfo = patientInfo[_addr];
@@ -110,8 +110,7 @@ contract MediChain {
             patientList.push(_addr);
             emailToAddress[_email] = _addr;
             emailToDesignation[_email] = _designation;
-        }
-        else if (_designation == 2){
+        } else if (_designation == 2) {
             Doctor storage dinfo = doctorInfo[_addr];
             dinfo.name = _name;
             dinfo.email = _email;
@@ -119,8 +118,7 @@ contract MediChain {
             doctorList.push(_addr);
             emailToAddress[_email] = _addr;
             emailToDesignation[_email] = _designation;
-        }
-        else if(_designation == 3){
+        } else if (_designation == 3) {
             Insurer storage iinfo = insurerInfo[_addr];
             iinfo.name = _name;
             iinfo.email = _email;
@@ -128,68 +126,80 @@ contract MediChain {
             insurerList.push(_addr);
             emailToAddress[_email] = _addr;
             emailToDesignation[_email] = _designation;
-        }
-        else{
+        } else {
             revert();
         }
     }
 
-    function login(address _addr) view public returns (uint){
+    function login(address _addr) public view returns (uint) {
         require(_addr != address(0));
-        if(patientInfo[_addr].exists){
+        if (patientInfo[_addr].exists) {
             return 1;
-        }else if(doctorInfo[_addr].exists){
+        } else if (doctorInfo[_addr].exists) {
             return 2;
-        }else if(insurerInfo[_addr].exists){
+        } else if (insurerInfo[_addr].exists) {
             return 3;
-        }else{
+        } else {
             return 0;
         }
     }
 
-
-    function getPatientDoctorList(address _addr) view public returns (address[] memory){
+    function getPatientDoctorList(
+        address _addr
+    ) public view returns (address[] memory) {
         require(_addr != address(0));
         require(patientInfo[_addr].exists);
         return (patientInfo[_addr].doctorAccessList);
     }
-    function getDoctorPatientList(address _addr) view public returns (address[] memory){
+    function getDoctorPatientList(
+        address _addr
+    ) public view returns (address[] memory) {
         require(_addr != address(0));
         require(doctorInfo[_addr].exists);
         return (doctorInfo[_addr].patientAccessList);
     }
-    function getInsurerPolicyList(address _addr) view public returns (Policy[] memory) {
+    function getInsurerPolicyList(
+        address _addr
+    ) public view returns (Policy[] memory) {
         require(_addr != address(0));
         require(insurerInfo[_addr].exists);
         return (insurerInfo[_addr].policies);
     }
-    function getInsurerPatientList(address _addr) view public returns (address[] memory){
+    function getInsurerPatientList(
+        address _addr
+    ) public view returns (address[] memory) {
         require(_addr != address(0));
         require(insurerInfo[_addr].exists);
         return (insurerInfo[_addr].patients);
     }
-    function getInsurerClaims(address _addr) view public returns (uint[] memory){
+    function getInsurerClaims(
+        address _addr
+    ) public view returns (uint[] memory) {
         require(_addr != address(0));
         require(insurerInfo[_addr].exists);
         return (insurerInfo[_addr].claims);
     }
-    function getPatientTransactions(address _addr) view public returns (uint[] memory){
+    function getPatientTransactions(
+        address _addr
+    ) public view returns (uint[] memory) {
         require(_addr != address(0));
         require(patientInfo[_addr].exists);
         return (patientInfo[_addr].transactions);
     }
-    function getDoctorTransactions(address _addr) view public returns (uint[] memory){
+    function getDoctorTransactions(
+        address _addr
+    ) public view returns (uint[] memory) {
         require(_addr != address(0));
         require(doctorInfo[_addr].exists);
         return (doctorInfo[_addr].transactions);
     }
-    function getAllDoctorsAddress() view public returns (address[] memory) {
+    function getAllDoctorsAddress() public view returns (address[] memory) {
         return doctorList;
     }
-    function getAllInsurersAddress() view public returns (address[] memory) {
+    function getAllInsurersAddress() public view returns (address[] memory) {
         return insurerList;
     }
-    function getAllPolicies() view public returns (Policy[] memory) {
+    function getAllPolicies() public view returns (Policy[] memory) {
         return policyList;
     }
 
@@ -208,7 +218,7 @@ contract MediChain {
     }
 
     // Called By Patient
-    function buyPolicy(uint _id) payable public {
+    function buyPolicy(uint _id) public payable {
         require(_id >= 0 && _id < policyList.length);
         require(msg.sender != address(0));
         require(patientInfo[msg.sender].exists);
@@ -223,9 +233,9 @@ contract MediChain {
         patientInfo[msg.sender].policyActive = true;
         insurerInfo[policyList[_id].insurer].patients.push(msg.sender);
     }
-    
+
     // Called by Patient
-    function revokeAccess(address _addr) public{
+    function revokeAccess(address _addr) public {
         require(_addr != address(0));
         require(msg.sender != address(0));
         require(doctorInfo[_addr].exists);
@@ -235,7 +245,7 @@ contract MediChain {
     }
 
     // Called by Patient
-    function settleTransactionsByPatient(uint _id) payable public {
+    function settleTransactionsByPatient(uint _id) public payable {
         require(msg.sender != address(0));
         require(patientInfo[msg.sender].exists);
         require(msg.sender == transactions[_id].sender);
@@ -247,74 +257,139 @@ contract MediChain {
     }
 
     // Called by Doctor
-    function insuranceClaimRequest(address paddr, string memory _hash, uint charges) public {
+    function insuranceClaimRequest(
+        address paddr,
+        string memory _hash,
+        uint charges
+    ) public {
         require(msg.sender != address(0));
         require(paddr != address(0));
         require(doctorInfo[msg.sender].exists);
         require(patientInfo[paddr].exists);
         require(bytes(_hash).length > 0);
         bool patientFound = false;
-        for(uint i = 0;i<doctorInfo[msg.sender].patientAccessList.length;i++){
-            if(doctorInfo[msg.sender].patientAccessList[i]==paddr){
+        for (
+            uint i = 0;
+            i < doctorInfo[msg.sender].patientAccessList.length;
+            i++
+        ) {
+            if (doctorInfo[msg.sender].patientAccessList[i] == paddr) {
                 patientFound = true;
             }
         }
-        if(!patientFound){
+        if (!patientFound) {
             revert();
         }
         patientInfo[paddr].record = _hash;
-        if(patientInfo[paddr].policyActive && patientInfo[paddr].policy.coverValue > 0){
+        if (
+            patientInfo[paddr].policyActive &&
+            patientInfo[paddr].policy.coverValue > 0
+        ) {
             address iaddr = patientInfo[paddr].policy.insurer;
-            if(patientInfo[paddr].policy.coverValue >= charges){
+            if (patientInfo[paddr].policy.coverValue >= charges) {
                 transactionCount++;
-                transactions[transactionCount] = Transactions(iaddr, msg.sender, charges, false);
+                transactions[transactionCount] = Transactions(
+                    iaddr,
+                    msg.sender,
+                    charges,
+                    false
+                );
                 doctorInfo[msg.sender].transactions.push(transactionCount);
                 insurerInfo[iaddr].transactions.push(transactionCount);
-                patientInfo[paddr].policy.coverValue = patientInfo[paddr].policy.coverValue - charges;
-                if(patientInfo[paddr].policy.coverValue==0){
+                patientInfo[paddr].policy.coverValue =
+                    patientInfo[paddr].policy.coverValue -
+                    charges;
+                if (patientInfo[paddr].policy.coverValue == 0) {
                     patientInfo[paddr].policyActive = false;
                 }
                 claimsCount++;
-                claims[claimsCount] = Claims(msg.sender, paddr, iaddr, patientInfo[paddr].policy.name, _hash, charges, false, false, transactionCount);
+                claims[claimsCount] = Claims(
+                    msg.sender,
+                    paddr,
+                    iaddr,
+                    patientInfo[paddr].policy.name,
+                    _hash,
+                    charges,
+                    false,
+                    false,
+                    transactionCount
+                );
                 insurerInfo[iaddr].claims.push(claimsCount);
-            }else{
+            } else {
                 transactionCount++;
-                transactions[transactionCount] = Transactions(paddr, msg.sender, charges-patientInfo[paddr].policy.coverValue, false);
+                transactions[transactionCount] = Transactions(
+                    paddr,
+                    msg.sender,
+                    charges - patientInfo[paddr].policy.coverValue,
+                    false
+                );
                 doctorInfo[msg.sender].transactions.push(transactionCount);
                 patientInfo[paddr].transactions.push(transactionCount);
                 transactionCount++;
-                transactions[transactionCount] = Transactions(iaddr, msg.sender, patientInfo[paddr].policy.coverValue, false);
+                transactions[transactionCount] = Transactions(
+                    iaddr,
+                    msg.sender,
+                    patientInfo[paddr].policy.coverValue,
+                    false
+                );
                 doctorInfo[msg.sender].transactions.push(transactionCount);
                 insurerInfo[iaddr].transactions.push(transactionCount);
                 claimsCount++;
-                claims[claimsCount] = Claims(msg.sender, paddr, iaddr, patientInfo[paddr].policy.name, _hash, patientInfo[paddr].policy.coverValue, false, false, transactionCount);
+                claims[claimsCount] = Claims(
+                    msg.sender,
+                    paddr,
+                    iaddr,
+                    patientInfo[paddr].policy.name,
+                    _hash,
+                    patientInfo[paddr].policy.coverValue,
+                    false,
+                    false,
+                    transactionCount
+                );
                 insurerInfo[iaddr].claims.push(claimsCount);
                 patientInfo[paddr].policy.coverValue = 0;
                 patientInfo[paddr].policyActive = false;
             }
-        }else{
+        } else {
             transactionCount++;
-            transactions[transactionCount] = Transactions(paddr, msg.sender, charges, false);
+            transactions[transactionCount] = Transactions(
+                paddr,
+                msg.sender,
+                charges,
+                false
+            );
             doctorInfo[msg.sender].transactions.push(transactionCount);
             patientInfo[paddr].transactions.push(transactionCount);
         }
     }
 
     // Called By Insurer
-    function createPolicy(string memory _name, uint _coverValue, uint _timePeriod, uint _premium) public {
+    function createPolicy(
+        string memory _name,
+        uint _coverValue,
+        uint _timePeriod,
+        uint _premium
+    ) public {
         require(bytes(_name).length > 0);
         require(_coverValue > 0);
         require(_premium > 0);
         require(_timePeriod > 0);
         require(msg.sender != address(0));
         require(insurerInfo[msg.sender].exists);
-        Policy memory pol = Policy(policyList.length, msg.sender, _name, _coverValue, _timePeriod, _premium);
+        Policy memory pol = Policy(
+            policyList.length,
+            msg.sender,
+            _name,
+            _coverValue,
+            _timePeriod,
+            _premium
+        );
         policyList.push(pol);
         insurerInfo[msg.sender].policies.push(pol);
     }
 
     // Called by Insurer
-    function approveClaimsByInsurer(uint _id) payable public {
+    function approveClaimsByInsurer(uint _id) public payable {
         require(msg.sender != address(0));
         require(insurerInfo[msg.sender].exists);
         require(msg.sender == claims[_id].insurer);
@@ -344,25 +419,28 @@ contract MediChain {
         tr.sender = _addr;
         patientInfo[_addr].transactions.push(claims[_id].transactionId);
         Policy storage pol = patientInfo[_addr].policy;
-        if(!patientInfo[_addr].policyActive){
+        if (!patientInfo[_addr].policyActive) {
             patientInfo[_addr].policyActive = true;
         }
         pol.coverValue += claims[_id].valueClaimed;
     }
 
-    function removeFromList(address[] storage Array, address addr) internal returns (uint){
+    function removeFromList(
+        address[] storage Array,
+        address addr
+    ) internal returns (uint) {
         require(addr != address(0));
         bool check = false;
         uint del_index = 0;
-        for(uint i = 0; i<Array.length; i++){
-            if(Array[i] == addr){
+        for (uint i = 0; i < Array.length; i++) {
+            if (Array[i] == addr) {
                 check = true;
                 del_index = i;
             }
         }
-        if(!check) revert();
-        else{
-            if(Array.length > 1){
+        if (!check) revert();
+        else {
+            if (Array.length > 1) {
                 Array[del_index] = Array[Array.length - 1];
             }
             Array.pop();
