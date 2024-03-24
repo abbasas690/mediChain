@@ -19,6 +19,8 @@ const Patient = ({ mediChain, account, ethValue }) => {
   const [transactionsList, setTransactionsList] = useState([]);
   const [showRecordModal, setShowRecordModal] = useState(false);
   const [patientRecord, setPatientRecord] = useState(null);
+  const [patientlabRecord, setPatientlabRecord] = useState(null);
+  const [showlabRecordModal, setShowlabRecordModal] = useState(false);
 
   const getPatientData = async () => {
     var patient = await mediChain.methods.patientInfo(account).call();
@@ -133,6 +135,18 @@ const Patient = ({ mediChain, account, ethValue }) => {
     await setShowRecordModal(true);
   };
 
+  const handleCloselabRecordModal = () => setShowlabRecordModal(false);
+  const handleShowlabRecordModal = async () => {
+    var record = {};
+    await fetch(`https:ipfs.io/ipfs/${patient.labRecord}`)
+      .then((res) => res.json())
+      .then((data) => {
+        record = JSON.parse(data.message);
+        console.log(typeof record);
+      });
+    await setPatientlabRecord(record);
+    await setShowlabRecordModal(true);
+  };
   useEffect(() => {
     if (account === "") return (window.location.href = "/login");
     if (!patient) getPatientData();
@@ -167,15 +181,25 @@ const Patient = ({ mediChain, account, ethValue }) => {
               <span>Your records are stored here: &nbsp; &nbsp;</span>
               <Button
                 variant="coolColor"
-                style={{ width: "20%", height: "4vh" }}
+                style={{ width: "20%", height: "4vh", marginBottom: "1rem" }}
                 onClick={handleShowRecordModal}
               >
                 View Records
               </Button>
             </div>
+            <div>
+              <span>Your Report are stored here: &nbsp; &nbsp;</span>
+              <Button
+                variant="coolColor"
+                style={{ width: "20%", height: "4vh" }}
+                onClick={handleShowlabRecordModal}
+              >
+                View Report
+              </Button>
+            </div>
           </div>
           <div className="box">
-            <h2>Share Your Medical Record with Doctor</h2>
+            <h2>Share Your Medical Record with Doctor & Lab Technician</h2>
             <Form onSubmit={giveAccess}>
               <Form.Group className="mb-3">
                 <Form.Label>Email:</Form.Label>
@@ -193,7 +217,8 @@ const Patient = ({ mediChain, account, ethValue }) => {
             </Form>
             <br />
             <h4>
-              List of Doctor's you have given access to your medical records
+              List of Doctor's & Lab Technician you have given access to your
+              medical records
             </h4>
             <Table striped bordered hover size="sm">
               <thead>
@@ -340,7 +365,7 @@ const Patient = ({ mediChain, account, ethValue }) => {
               <thead>
                 <tr>
                   <th>Sr.No.</th>
-                  <th>Doctor&nbsp;Email</th>
+                  <th>Email</th>
                   <th>Amount</th>
                   <th>Status</th>
                   <th>Action</th>
@@ -470,6 +495,69 @@ const Patient = ({ mediChain, account, ethValue }) => {
         </>
       ) : (
         <div>Loading...</div>
+      )}
+      {patientlabRecord ? (
+        <Modal
+          id="modal"
+          size="lg"
+          centered
+          show={showlabRecordModal}
+          onHide={handleCloselabRecordModal}
+        >
+          <Modal.Header closeButton>
+            <Modal.Title id="modalTitle">Medical Record:</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form>
+              <Table id="records" striped bordered hover size="sm">
+                <thead>
+                  <tr>
+                    <th>Sr.&nbsp;No.</th>
+                    <th>Lab Technician&nbsp;Email</th>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Report</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {patientlabRecord.labRecord.length > 0 ? (
+                    patientlabRecord.labRecord.map((treatment, idx) => {
+                      return (
+                        <tr key={idx + 1}>
+                          <td>{idx + 1}</td>
+                          <td>{treatment.doctorEmail}</td>
+                          <td>{treatment.date}</td>
+                          <td>{treatment.treatment}</td>
+                          <td>
+                            {treatment.prescription ? (
+                              <Link
+                                to={`https://ipfs.io/ipfs/${treatment.prescription}`}
+                                target="_blank"
+                              >
+                                <Button variant="coolColor">View</Button>
+                              </Link>
+                            ) : (
+                              "No document uploaded"
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <></>
+                  )}
+                </tbody>
+              </Table>
+            </Form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleCloselabRecordModal}>
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      ) : (
+        <></>
       )}
     </div>
   );

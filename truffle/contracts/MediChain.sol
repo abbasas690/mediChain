@@ -27,6 +27,8 @@ contract MediChain {
         string email;
         uint age;
         string record;
+        string labRecord;
+        string appointment;
         bool exists;
         bool policyActive;
         Policy policy;
@@ -37,6 +39,7 @@ contract MediChain {
         string name;
         string email;
         bool exists;
+        string lab;
         uint[] transactions;
         address[] patientAccessList;
     }
@@ -86,7 +89,10 @@ contract MediChain {
         uint _age,
         uint _designation,
         string memory _email,
-        string memory _hash
+        string memory _hash,
+        string memory _hashLab,
+        string memory _hashAppointments,
+        string memory _lab
     ) public {
         require(msg.sender != address(0));
         require(bytes(_name).length > 0);
@@ -105,6 +111,8 @@ contract MediChain {
             pinfo.email = _email;
             pinfo.age = _age;
             pinfo.record = _hash;
+            pinfo.labRecord = _hashLab;
+            pinfo.appointment = _hashAppointments;
             pinfo.exists = true;
             pinfo.doctorAccessList;
             patientList.push(_addr);
@@ -115,6 +123,7 @@ contract MediChain {
             dinfo.name = _name;
             dinfo.email = _email;
             dinfo.exists = true;
+            dinfo.lab = _lab;
             doctorList.push(_addr);
             emailToAddress[_email] = _addr;
             emailToDesignation[_email] = _designation;
@@ -260,7 +269,8 @@ contract MediChain {
     function insuranceClaimRequest(
         address paddr,
         string memory _hash,
-        uint charges
+        uint charges,
+        uint h
     ) public {
         require(msg.sender != address(0));
         require(paddr != address(0));
@@ -280,7 +290,12 @@ contract MediChain {
         if (!patientFound) {
             revert();
         }
-        patientInfo[paddr].record = _hash;
+
+        if (h == 0) {
+            patientInfo[paddr].record = _hash;
+        } else {
+            patientInfo[paddr].labRecord = _hash;
+        }
         if (
             patientInfo[paddr].policyActive &&
             patientInfo[paddr].policy.coverValue > 0

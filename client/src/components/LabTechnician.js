@@ -8,7 +8,7 @@ import { Buffer } from "buffer";
 import { Link } from "react-router-dom";
 import { pinToPinata, uploadAndPin, uploadFile } from "./utils";
 
-const Doctor = ({ mediChain, account }) => {
+const LabTechnician = ({ mediChain, account }) => {
   const [doctor, setDoctor] = useState(null);
   const [patient, setPatient] = useState(null);
   const [patientRecord, setPatientRecord] = useState(null);
@@ -72,7 +72,7 @@ const Doctor = ({ mediChain, account }) => {
   };
   const handleShowRecordModal = async (patient) => {
     var record = {};
-    await fetch(`https://ipfs.io/ipfs/${patient.record}`)
+    await fetch(`https://ipfs.io/ipfs/${patient.labRecord}`)
       .then((res) => res.json())
       .then((data) => (record = JSON.parse(data.message)));
     await setPatientRecord(record);
@@ -90,10 +90,11 @@ const Doctor = ({ mediChain, account }) => {
     }
 
     var record = {};
-    await fetch(`https://ipfs.io/ipfs/${patient.record}`)
+    await fetch(`https://ipfs.io/ipfs/${patient.labRecord}`)
       .then((res) => res.json())
       .then((data) => {
         record = JSON.parse(data.message);
+        console.log(record);
       });
     const date = new Date();
 
@@ -105,22 +106,21 @@ const Doctor = ({ mediChain, account }) => {
       minute: "2-digit",
     });
     // console.log( record)
-    record.treatments = [
+    record.labRecord = [
       {
-        disease,
         treatment,
         charges,
         prescription: file,
         date: formattedDate,
         doctorEmail: doctor.email,
       },
-      ...record.treatments,
+      ...record.labRecord,
     ];
     record = record;
     await uploadAndPin(record).then((result) => {
       console.log(result);
       mediChain.methods
-        .insuranceClaimRequest(patient.account, result, charges, 0)
+        .insuranceClaimRequest(patient.account, result, charges, 1)
         .send({ from: account })
         .on("transactionHash", (hash) => {
           return (window.location.href = "/login");
@@ -140,10 +140,10 @@ const Doctor = ({ mediChain, account }) => {
       {doctor ? (
         <>
           <div className="box">
-            <h2>Doctor's Profile</h2>
+            <h2>Lab Technician's Profile</h2>
             <Form>
               <Form.Group>
-                <Form.Label>Name: Dr. {doctor.name}</Form.Label>
+                <Form.Label>Name: {doctor.name}</Form.Label>
               </Form.Group>
               <Form.Group>
                 <Form.Label>Email: {doctor.email}</Form.Label>
@@ -154,7 +154,7 @@ const Doctor = ({ mediChain, account }) => {
             </Form>
           </div>
           <div className="box">
-            <h2>List of Patient's Medical Records</h2>
+            <h2>List of Patient's Medical Report</h2>
             <Table id="records" striped bordered hover size="sm">
               <thead>
                 <tr>
@@ -178,7 +178,7 @@ const Doctor = ({ mediChain, account }) => {
                             variant="coolColor"
                             onClick={(e) => handleShowModal(pat)}
                           >
-                            Diagnose
+                            Upload
                           </Button>
                         </td>
                         <td>
@@ -247,29 +247,19 @@ const Doctor = ({ mediChain, account }) => {
             >
               <Modal.Header closeButton>
                 <Modal.Title id="modalTitle">
-                  Enter diagnosis for: {patient.name}
+                  Upload Lab Report for: {patient.name}
                 </Modal.Title>
               </Modal.Header>
               <Modal.Body>
                 <Form>
                   <Form.Group className="mb-3">
-                    <Form.Label>Disease: </Form.Label>
-                    <Form.Control
-                      required
-                      type="text"
-                      value={disease}
-                      onChange={(e) => setDisease(e.target.value)}
-                      placeholder="Enter disease"
-                    ></Form.Control>
-                  </Form.Group>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Treatment: </Form.Label>
+                    <Form.Label>Description: </Form.Label>
                     <Form.Control
                       required
                       as="textarea"
                       value={treatment}
                       onChange={(e) => setTreatment(e.target.value)}
-                      placeholder="Enter the treatment in details"
+                      placeholder="Enter the desciption "
                     ></Form.Control>
                   </Form.Group>
                   <Form.Group className="mb-3">
@@ -279,11 +269,11 @@ const Doctor = ({ mediChain, account }) => {
                       type="number"
                       value={charges}
                       onChange={(e) => setCharges(e.target.value)}
-                      placeholder="Enter medical charges incurred"
+                      placeholder="Enter report charges incurred"
                     ></Form.Control>
                   </Form.Group>
                   <Form.Group className="mb-3">
-                    <Form.Label>Upload Prescription</Form.Label>
+                    <Form.Label>Upload Report</Form.Label>
                     <Form.Control
                       onChange={captureFile}
                       accept=".jpg, .jpeg, .png, .pdf"
@@ -301,7 +291,7 @@ const Doctor = ({ mediChain, account }) => {
                   variant="coolColor"
                   onClick={submitDiagnosis}
                 >
-                  Submit Diagnosis
+                  Submit Report
                 </Button>
               </Modal.Footer>
             </Modal>
@@ -317,44 +307,28 @@ const Doctor = ({ mediChain, account }) => {
               onHide={handleCloseRecordModal}
             >
               <Modal.Header closeButton>
-                <Modal.Title id="modalTitle">Medical Record:</Modal.Title>
+                <Modal.Title id="modalTitle">Medical Report:</Modal.Title>
               </Modal.Header>
               <Modal.Body>
                 <Form>
-                  <Form.Group>
-                    <Form.Label>Patient Name: {patientRecord.name}</Form.Label>
-                  </Form.Group>
-                  <Form.Group>
-                    <Form.Label>
-                      Patient Email: {patientRecord.email}
-                    </Form.Label>
-                  </Form.Group>
-                  <Form.Group>
-                    <Form.Label>Patient Age: {patientRecord.age}</Form.Label>
-                  </Form.Group>
-                  <Form.Group>
-                    <Form.Label>Address: {patientRecord.address}</Form.Label>
-                  </Form.Group>
                   <Table id="records" striped bordered hover size="sm">
                     <thead>
                       <tr>
                         <th>Sr.&nbsp;No.</th>
-                        <th>Doctor&nbsp;Email</th>
+                        <th>Email</th>
                         <th>Date</th>
-                        <th>Disease</th>
-                        <th>Treatment</th>
-                        <th>Prescription</th>
+                        <th>Description</th>
+                        <th>Report</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {patientRecord.treatments.length > 0 ? (
-                        patientRecord.treatments.map((treatment, idx) => {
+                      {patientRecord.labRecord.length > 0 ? (
+                        patientRecord.labRecord.map((treatment, idx) => {
                           return (
                             <tr key={idx + 1}>
                               <td>{idx + 1}</td>
                               <td>{treatment.doctorEmail}</td>
                               <td>{treatment.date}</td>
-                              <td>{treatment.disease}</td>
                               <td>{treatment.treatment}</td>
                               <td>
                                 {treatment.prescription ? (
@@ -395,4 +369,4 @@ const Doctor = ({ mediChain, account }) => {
   );
 };
 
-export default Doctor;
+export default LabTechnician;
