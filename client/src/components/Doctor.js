@@ -20,6 +20,7 @@ const Doctor = ({ mediChain, account }) => {
   const [showModal, setShowModal] = useState(false);
   const [showRecordModal, setShowRecordModal] = useState(false);
   const [transactionsList, setTransactionsList] = useState([]);
+  const [appointment, setAppointment] = useState([]);
 
   const getDoctorData = async () => {
     var doctor = await mediChain.methods.doctorInfo(account).call();
@@ -128,11 +129,57 @@ const Doctor = ({ mediChain, account }) => {
     });
   };
 
+  const handleAcceptAppointment = async (id, patientEmail, choice) => {
+    console.log(patientEmail);
+    var addr = await mediChain.methods.emailToAddress(patientEmail).call();
+    let patient = await mediChain.methods.patientInfo(addr).call();
+    let reacord = [];
+    await fetch(`https:ipfs.io/ipfs/${patient.appointment}`)
+      .then((res) => res.json())
+      .then((data) => {
+        reacord = JSON.parse(data.message);
+      });
+    let changedRecord = [];
+    if (choice == 1) {
+      changedRecord = reacord.appointments.map((d) =>
+        d.id === id ? { ...d, accept: true, reject: false } : d
+      );
+    } else {
+      changedRecord = reacord.appointments.map((d) =>
+        d.id === id ? { ...d, reject: true, accept: false } : d
+      );
+    }
+    console.log(changedRecord);
+    changedRecord = { appointments: [...changedRecord] };
+    await uploadAndPin(changedRecord).then((result) => {
+      console.log(result);
+      mediChain.methods
+        .makeAppointment(addr, result)
+        .send({ from: account })
+        .on("transactionHash", (hash) => {
+          return (window.location.href = "/dashboard");
+        });
+    });
+  };
+  const getAppointments = async () => {
+    let appointment1 = [];
+    for (const i of patList) {
+      await fetch(`https:ipfs.io/ipfs/${i.appointment}`)
+        .then((res) => res.json())
+        .then((data) => {
+          const d = JSON.parse(data.message);
+          appointment1 = [...appointment1, ...d.appointments];
+        });
+    }
+    setAppointment(appointment1);
+  };
+
   useEffect(() => {
     if (account === "") return (window.location.href = "/login");
     if (!doctor) getDoctorData();
     if (patList.length === 0) getPatientAccessList();
     if (transactionsList.length === 0) getTransactionsList();
+    if (appointment.length === 0) getAppointments();
   }, [doctor, patList, transactionsList]);
 
   return (
@@ -197,6 +244,63 @@ const Doctor = ({ mediChain, account }) => {
                 )}
               </tbody>
             </Table>
+          </div>
+          <div className="box">
+            <h2>appointments</h2>
+            <Table striped bordered hover size="sm">
+              <thead>
+                <tr>
+                  <th>Sr.&nbsp;No.</th>
+                  <th>Date</th>
+                  <th>patient Email</th>
+                  <th> Description</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {appointment.length > 0 ? (
+                  appointment.map((transaction, idx) => {
+                    return (
+                      <tr key={idx + 1}>
+                        <td>{idx + 1}</td>
+                        <td>{transaction.date}</td>
+                        <td>{transaction.patientEmail}</td>
+                        <td>{transaction.description}</td>
+                        <td>
+                          <Button
+                            className="secondary m-1"
+                            onClick={() =>
+                              handleAcceptAppointment(
+                                transaction.id,
+                                transaction.patientEmail,
+                                1
+                              )
+                            }
+                          >
+                            accept
+                          </Button>
+                          <Button
+                            className="btn-danger"
+                            onClick={() =>
+                              handleAcceptAppointment(
+                                transaction.id,
+                                transaction.patientEmail,
+                                2
+                              )
+                            }
+                          >
+                            reject
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <></>
+                )}
+              </tbody>
+            </Table>
+            <button onClick={() => console.log(appointment)}> onClick</button>
           </div>
           <div className="box">
             <h2>List of Transactions</h2>

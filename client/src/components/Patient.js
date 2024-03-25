@@ -7,6 +7,7 @@ import Modal from "react-bootstrap/Modal";
 import { Link } from "react-router-dom";
 import Web3 from "web3";
 import { uploadAndPin } from "./utils";
+import { v4 as uuidv4 } from "uuid";
 
 const Patient = ({ mediChain, account, ethValue }) => {
   const [patient, setPatient] = useState(null);
@@ -166,7 +167,13 @@ const Patient = ({ mediChain, account, ethValue }) => {
         console.log(record);
       });
     record.appointments = [
-      { accept: false, reject: false, ...appointment },
+      {
+        id: uuidv4(),
+        accept: false,
+        reject: false,
+        patientEmail: patient.email,
+        ...appointment,
+      },
       ...record.appointments,
     ];
     var addr = await mediChain.methods.emailToAddress(patient.email).call();
