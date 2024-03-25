@@ -318,7 +318,6 @@ const Doctor = ({ mediChain, account }) => {
                 )}
               </tbody>
             </Table>
-            <button onClick={() => console.log(appointment)}> onClick</button>
           </div>
           <div className="box">
             <h2>List of Transactions</h2>
