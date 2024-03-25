@@ -705,11 +705,11 @@ const Patient = ({ mediChain, account, ethValue }) => {
                           <td>
                             {treatment.accept === false &&
                             treatment.reject === false ? (
-                              "pending"
+                              <p className=" badge  bg-warning">pending</p>
                             ) : treatment.accept === true ? (
-                              "accept"
+                              <p className="badge  bg-success">accepted</p>
                             ) : treatment.reject === true ? (
-                              "reject"
+                              <p className="badge  bg-danger">rejected</p>
                             ) : (
                               <></>
                             )}

@@ -150,6 +150,7 @@ const Doctor = ({ mediChain, account }) => {
       );
     }
     console.log(changedRecord);
+    setAppointment(changedRecord);
     changedRecord = { appointments: [...changedRecord] };
     await uploadAndPin(changedRecord).then((result) => {
       console.log(result);
@@ -269,30 +270,43 @@ const Doctor = ({ mediChain, account }) => {
                             <td>{transaction.patientEmail}</td>
                             <td>{transaction.description}</td>
                             <td>
-                              <Button
-                                className="secondary m-1"
-                                onClick={() =>
-                                  handleAcceptAppointment(
-                                    transaction.id,
-                                    transaction.patientEmail,
-                                    1
-                                  )
-                                }
-                              >
-                                accept
-                              </Button>
-                              <Button
-                                className="btn-danger"
-                                onClick={() =>
-                                  handleAcceptAppointment(
-                                    transaction.id,
-                                    transaction.patientEmail,
-                                    2
-                                  )
-                                }
-                              >
-                                reject
-                              </Button>
+                              {!transaction.accept === true &&
+                              !transaction.reject === true ? (
+                                <>
+                                  <Button
+                                    className="secondary m-1"
+                                    onClick={() =>
+                                      handleAcceptAppointment(
+                                        transaction.id,
+                                        transaction.patientEmail,
+                                        1
+                                      )
+                                    }
+                                  >
+                                    accept
+                                  </Button>
+                                  <Button
+                                    className="btn-danger"
+                                    onClick={() =>
+                                      handleAcceptAppointment(
+                                        transaction.id,
+                                        transaction.patientEmail,
+                                        2
+                                      )
+                                    }
+                                  >
+                                    reject
+                                  </Button>
+                                </>
+                              ) : (
+                                <>
+                                  {transaction.accept === true ? (
+                                    <p className="badge bg-success">accepted</p>
+                                  ) : (
+                                    <p className="badge bg-danger">rejected</p>
+                                  )}
+                                </>
+                              )}
                             </td>
                           </tr>
                         )}
