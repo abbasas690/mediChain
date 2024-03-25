@@ -261,38 +261,42 @@ const Doctor = ({ mediChain, account }) => {
                 {appointment.length > 0 ? (
                   appointment.map((transaction, idx) => {
                     return (
-                      <tr key={idx + 1}>
-                        <td>{idx + 1}</td>
-                        <td>{transaction.date}</td>
-                        <td>{transaction.patientEmail}</td>
-                        <td>{transaction.description}</td>
-                        <td>
-                          <Button
-                            className="secondary m-1"
-                            onClick={() =>
-                              handleAcceptAppointment(
-                                transaction.id,
-                                transaction.patientEmail,
-                                1
-                              )
-                            }
-                          >
-                            accept
-                          </Button>
-                          <Button
-                            className="btn-danger"
-                            onClick={() =>
-                              handleAcceptAppointment(
-                                transaction.id,
-                                transaction.patientEmail,
-                                2
-                              )
-                            }
-                          >
-                            reject
-                          </Button>
-                        </td>
-                      </tr>
+                      <>
+                        {transaction.email === doctor.email && (
+                          <tr key={idx + 1}>
+                            <td>{idx + 1}</td>
+                            <td>{transaction.date}</td>
+                            <td>{transaction.patientEmail}</td>
+                            <td>{transaction.description}</td>
+                            <td>
+                              <Button
+                                className="secondary m-1"
+                                onClick={() =>
+                                  handleAcceptAppointment(
+                                    transaction.id,
+                                    transaction.patientEmail,
+                                    1
+                                  )
+                                }
+                              >
+                                accept
+                              </Button>
+                              <Button
+                                className="btn-danger"
+                                onClick={() =>
+                                  handleAcceptAppointment(
+                                    transaction.id,
+                                    transaction.patientEmail,
+                                    2
+                                  )
+                                }
+                              >
+                                reject
+                              </Button>
+                            </td>
+                          </tr>
+                        )}
+                      </>
                     );
                   })
                 ) : (
