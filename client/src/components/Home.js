@@ -21,7 +21,7 @@ const Home = () => {
             fontSize: "5rem",
           }}
         >
-          <span style={{ color: "blueviolet" }}>P</span>atient
+          <span style={{ color: "#FF0000" }}>P</span>atient
         </h1>
         <h1
           style={{
