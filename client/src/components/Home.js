@@ -12,7 +12,7 @@ const Home = () => {
           width: "80vw",
           margin: "0 auto",
           color: "white",
-          // backgroundColor: "blueviolet",
+          userSelect: "none",
         }}
       >
         <h1
