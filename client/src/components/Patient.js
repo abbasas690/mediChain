@@ -351,7 +351,7 @@ const Patient = ({ mediChain, account, ethValue }) => {
               <Button
                 variant="coolColor"
                 type="submit"
-                style={{ marginTop: "1rem" }}
+                style={{ marginTop: "1rem", marginRight: "1rem" }}
               >
                 Make Appointment
               </Button>

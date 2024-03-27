@@ -50,6 +50,9 @@ const SiteNavbar = ({ token, account, setAccount, setToken }) => {
             </>
           ) : (
             <>
+              <Nav.Link as={Link} to="/">
+                <small className="text-nav">Home</small>
+              </Nav.Link>
               <Nav.Link as={Link} to="/login">
                 <small className="text-nav">Login</small>
               </Nav.Link>
